@@ -5,7 +5,7 @@ package BlackJack;
     -compare winners more accurately
     (-show both cards for dealer by dealers turn)
     (-need to fix by which card dealt - if king queen or jack...)
-    -when dealer has blackjack the program errorfully deals him another card
+    
 */
 
 import java.util.*;
@@ -211,6 +211,7 @@ public class Blackjack{
 	}
     
     public static void dealersTurn(int [][] players, boolean [] deck, String [] playersNames){
+        String winLoseStatus = "";
         int dSum = countCards(players[players.length - 1], playersNames);
         boolean isHit;
         
