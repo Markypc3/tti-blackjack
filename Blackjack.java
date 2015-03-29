@@ -1,12 +1,11 @@
 package BlackJack;
-/*  marco Pariente-Cohen
-    Pessy Weinstock
-    Hadassah Bergstein
-    Ettie Schreiber
-    Chaya Berliner
-    Rachel Leah Wachsman
-    Goldy Friedman
-    
+/*  fix up list:
+    -need to take out a busted player from game 
+    -fix the isThereOneAceHigh method 
+    -compare winners more accurately
+    (-show both cards for dealer by dealers turn)
+    (-need to fix by which card dealt - if king queen or jack...)
+    -when dealer has blackjack the program errorfully deals him another card
 */
 
 import java.util.*;
@@ -37,7 +36,7 @@ public class Blackjack{
             playersNames[i] = input.next();
         playersNames[amountOfPlayers] = "Dealer";
             
-        int[][] players = new int [amountOfPlayers + 1][12];
+        int[][] players = new int[amountOfPlayers + 1][12];
         
         //populating the players array with the value -1
         for (int i = 0; i < players.length; i++)
@@ -47,7 +46,6 @@ public class Blackjack{
         //dealing cards to all the players    
         for (int i = 0; i < players.length; i++) {
             dealCards(deck, players[i]);
-            
         }
         
          for (int i = 0; i < players.length - 1; i++) {
@@ -57,93 +55,62 @@ public class Blackjack{
               
  
         dealersTurn(players, deck, playersNames);
-        input.close();
+        //input.close();
     }
     
     //printing the cards of each player
+    /**
+     * Prints the face value of each of the players cards and the face value of the dealers first card except for when it is the dealers turn
+     * @param playersHands All playersHands on the playing field
+     * @param currentPlayer The index of playersHand array that is the current player
+     * @param playersNames The names of all players
+     */
     public static void printCards(int[][] playersHands, int currentPlayer, String [] playersNames) {
-        
-//        char s = 6; //suits will display in command line but not eclipse
-//        char d = 4;
-//        char c = 5;
-//        char h = 3;
-    	String s = "Spades", d = "Diamonds", c = "Clubs", h = "Hearts";
-        int cardNumber = 0;
         
         for (int player = 0; player < playersNames.length; player++){
             System.out.println(playersNames[player] + "'s cards are: ");
                 for (int card = 0; card < playersHands[0].length && playersHands[player][card]!= -1; card++) {
-                	/*if (array[j][i] == -1)
-                		break; */
-                	if (playersHands[player][card] / 13 == 0) {
-                        cardNumber = (playersHands[player][card] % 13) + 1;
-                        if (cardNumber == 1)
-                        	System.out.println("Ace of " + s);
-                        if (cardNumber == 11)
-                        	System.out.println("Jack of " + s);
-                        if (cardNumber == 12)
-                        	System.out.println("Queen of " + s);
-                        if (cardNumber == 13)
-                        	System.out.println("King of " + s);
-                        if (cardNumber != 1 && cardNumber != 11 && cardNumber != 12 && cardNumber != 13)
-                        	System.out.println(cardNumber + " of " + s);
-                        if (playersNames[player] == "Dealer" && (currentPlayer!=playersNames.length-1))
-                            break;                         	
-                        }
-                        
-                        
-                    
-                  if (playersHands[player][card] / 13 == 1) {
-                	  cardNumber = (playersHands[player][card] % 13) + 1;
-                      if (cardNumber == 1)
-                      	System.out.println("Ace of " + d);
-                      if (cardNumber == 11)
-                      	System.out.println("Jack of " + d);
-                      if (cardNumber == 12)
-                      	System.out.println("Queen of " + d);
-                      if (cardNumber == 13)
-                      	System.out.println("King of " + d);
-                      if (cardNumber != 1 && cardNumber != 11 && cardNumber != 12 && cardNumber != 13)
-                      	System.out.println(cardNumber + " of " + d);
-                      if (playersNames[player] == "Dealer" && (currentPlayer!=playersNames.length-1))
-                          break;                         	
-                      }
-                  
-                    if (playersHands[player][card] / 13 == 2) {
-                    	cardNumber = (playersHands[player][card] % 13) + 1;
-                        if (cardNumber == 1)
-                        	System.out.println("Ace of " + c);
-                        if (cardNumber == 11)
-                        	System.out.println("Jack of " + c);
-                        if (cardNumber == 12)
-                        	System.out.println("Queen of " + c);
-                        if (cardNumber == 13)
-                        	System.out.println("King of " + c);
-                        if (cardNumber != 1 && cardNumber != 11 && cardNumber != 12 && cardNumber != 13)
-                        	System.out.println(cardNumber + " of " + c);
-                        if (playersNames[player] == "Dealer" && (currentPlayer!=playersNames.length-1))
-                            break;                         	
-                        }
-                    if (playersHands[player][card] / 13 == 3) {
-                    	cardNumber = (playersHands[player][card] % 13) + 1;
-                        if (cardNumber == 1)
-                        	System.out.println("Ace of " + h);
-                        if (cardNumber == 11)
-                        	System.out.println("Jack of " + h);
-                        if (cardNumber == 12)
-                        	System.out.println("Queen of " + h);
-                        if (cardNumber == 13)
-                        	System.out.println("King of " + h);
-                        if (cardNumber != 1 && cardNumber != 11 && cardNumber != 12 && cardNumber != 13)
-                        	System.out.println(cardNumber + " of " + h);
-                        if (playersNames[player] == "Dealer" && (currentPlayer!=playersNames.length-1))
-                            break;                         	
-                        }
+             
+                	String cardFaceValue = getCardFaceValueText(playersHands, player, card); 
+                	System.out.println(cardFaceValue);
+                	if(playersNames[player] == "Dealer" && currentPlayer != playersHands.length -1)
+                		break;
                 }
-            }
+             
             
+               System.out.println();
         }
-                    
+    }
+	/**
+	 * Gets the face value of a card on the playing field.
+	 * @param playersHands All Players hands on the playing field.
+	 * @param player The index in the playershands array that is the current player.
+	 * @param card The index of the current players card that we want to print.
+	 * @return A String with the full Face value of the card.
+	 */
+	private static String getCardFaceValueText(int[][] playersHands,
+			int player, int card) {
+		int cardNumber;
+		int suit;
+		String cardFaceValue="";    
+		cardNumber = (playersHands[player][card] % 13) + 1;
+		    switch (cardNumber) {
+		    	case 1: cardFaceValue="Ace of "; break;
+		    	case 11: cardFaceValue="Jack of "; break;
+		    	case 12: cardFaceValue="Queen of "; break;
+		    	case 13: cardFaceValue="King of "; break;
+		    	default: cardFaceValue= cardNumber + " of "; break;
+		    }
+		    suit = playersHands[player][card] / 13;
+		    switch(suit) {
+		    	case 0: cardFaceValue+="Spades"; break;
+		    	case 1: cardFaceValue+="Diamonds"; break;
+		    	case 2: cardFaceValue+="Clubs"; break;
+		    	case 3: cardFaceValue+="Hearts"; break;
+		    	default: cardFaceValue+="Unknown suit"; break;
+		    }
+		return cardFaceValue;
+	}                    
    public static void dealCards(boolean[] deck, int[] playerhand) {
 	   int count = 0;
 	   while(count < 2) {
@@ -156,15 +123,12 @@ public class Blackjack{
 		   }
 	   }
     
-    
-    
-    
     public static int countCards(int[] cards,  String [] playersNames) {
     int sum = 0;
     boolean aceFound=false;
     int c = 0;  //changed to 0
     for (int i = 0; i < cards.length && cards[i] != -1 ; i++ ) {//the loop doesn't need to go through the whole array
-    	c = cards[i] % 13; //divide to get card number, but it's 1 off (lower cuz of 0 index)
+    	c = cards[i] % 13; //divide to get card number, but it's 1 off (lower because of 0 index)
        	if (c >= 0 && c < 9)
        		sum += c + 1;
        	if (c >= 9 && c <= 12)
@@ -173,27 +137,26 @@ public class Blackjack{
        		aceFound=true;
        	}
     if (aceFound)
-    	sum+= (aceIsHigh(sum)?10:0);//After summing all cards, add ten if there are any aces with room to be high
+    	sum+= (isSumLessThanEleven(sum)?10:0);//After summing all cards, add ten if there are any aces with room to be high
     return sum;
     }
     
-    public static boolean aceIsHigh(int sum) { //the math is still in the process
-    	if (sum < 11) //System.out.println("Your Ace is high");
+    public static boolean isSumLessThanEleven(int sum) { 
+    	if (sum < 11)
     		return true;
-    	else // System.out.println("Your Ace is low");
+    	else 
     		return false;
     }
    
-    public static void promptUser(int currentPlayer, int[][] players,boolean[] deck, String[] playersNames) {
+    public static void promptUser(int currentPlayer, int[][] players, boolean[] deck, String[] playersNames) {
     	Scanner input = new Scanner(System.in);
     	boolean isHit;
     	do{
             int sumOfCards = countCards(players[currentPlayer], playersNames);
             if(sumOfCards >  21){
-                System.out.println("You Busted. Your turn is over; You lost ");
+                System.out.println(playersNames[currentPlayer]  + ", you Busted. Your turn is over; You lost ");
                 break;
             }  
-           // printCards(players,i, playersNames); COMMENTED OUT SO WON'T REPRINT, DIDN'T DELETE CUZ NOT SURE IF NEED LATER
             System.out.print(playersNames[currentPlayer] +", your cards count up to " 
            + sumOfCards +" Would you like to Hit or Stick?"
            		+ "(put in -true- for hit and -false- for stick)");
@@ -202,11 +165,14 @@ public class Blackjack{
             isHit = response.contentEquals("hit")||response.contentEquals("true");
             
              if(isHit)
-                System.out.println("You were dealt a " + (hit(deck,players[currentPlayer])%13)+1);
+             {	
+            	hit(deck,players[currentPlayer]);
+                System.out.println("You were dealt a " + getCardFaceValueText(players, currentPlayer, getPlayersFirstEmptyCardIndex(players[currentPlayer])-1));//need to add here if its a 10,11,12 that its king queen or jack
+             }
              else
                 System.out.println(playersNames[currentPlayer] + ", Your turn is over");
         } while(isHit);
-        input.close();
+       // input.close();
            
     }
     
@@ -214,7 +180,7 @@ public class Blackjack{
     	printCards(players, i, playersName);
     	//need to put this if statement in the startGame method
     	if(isBlackJack(players[i])){
-    		System.out.println(playersName[i] + "has BlackJack!!! Your turn is over; You Won! ");
+    		System.out.println(playersName[i] + " has BlackJack!!! Your turn is over; You Won! ");
     		return;
     	}
     	promptUser(i, players, deck, playersName);
@@ -227,52 +193,114 @@ public class Blackjack{
             x = (int)(Math.random() * 52);
         }
         deck[x] = true;
-        for(int i = 0; i < whosTurn.length; i++) {
+        whosTurn[getPlayersFirstEmptyCardIndex(whosTurn)] = x;
+        return x;
+    }
+	/**
+	 * @param whosTurn The player index for whom we want the last card.
+	 * @return The index of the last card in the players hand
+	 */
+	private static int getPlayersFirstEmptyCardIndex(int[] whosTurn) {
+		int i;
+        for(i= 0; i < whosTurn.length; i++) {
             if (whosTurn[i] == -1) {
-                whosTurn[i] = x;
                 break;
             }
         }
-        return x;
-    }
+		return i;
+	}
     
     public static void dealersTurn(int [][] players, boolean [] deck, String [] playersNames){
         int dSum = countCards(players[players.length - 1], playersNames);
+        boolean isHit;
         
-        if (dSum < 17)
-            hit(deck, players[players.length - 1]);
-        else if(isThereOneAceHigh(players[players.length - 1], dSum) && dSum == 17) // this is what the method is expecting... the isThereOneAce method is also expecting to be passed in something
-            hit(deck, players[players.length - 1]);
-        else{   //stick
-          for(int i = 0; i < players.length; i++)
-            if(dSum > 21)
-                revealWinnerAndTerminate(playersNames[i] + " Player wins!");
-            else{ 
-                if(countCards(players[i],playersNames) > dSum)
-                     revealWinnerAndTerminate(playersNames[i] + " Player wins!");
-                else{ 
-                    if(countCards(players[i],playersNames) == dSum)
-                         revealWinnerAndTerminate("Draw..");
-                    else
-                         revealWinnerAndTerminate("Dealer wins!");
-                }
-            }
-        }
+        System.out.println("It is the dealer's turn. \nThe dealers cards are:"); //added this to print dealers first 2 cards
+        for (int i = 0; i < 2; i++)
+        	System.out.println(getCardFaceValueText(players, players.length -1, i));
+        do{
+        	isHit = false;
+        	if (dSum < 17){
+        		hit(deck, players[players.length - 1]);
+        		dSum = countCards(players[players.length - 1], playersNames);
+        		System.out.println("To see what the dealer has dealt, press enter!"); 
+        		Scanner input = new Scanner(System.in);
+        		input.nextLine();
+        		System.out.println("The dealer was dealt a " 
+        		    + getCardFaceValueText(players, players.length - 1, getPlayersFirstEmptyCardIndex(players[players.length - 1])-1) + " your cards now"
+        				+ " count up to " + dSum);
+        		isHit = true;
+        	}else if(isThereOneAceHigh(players[players.length - 1], dSum) && dSum == 17){ // this is what the method is expecting... the isThereOneAce method is also expecting to be passed in something
+        		hit(deck, players[players.length - 1]);
+        		dSum = countCards(players[players.length - 1], playersNames);
+        		System.out.println("Dealer, you were dealt a " + ((hit(deck,players[players.length - 1])%13)+1) + " your cards now"
+        				+ " count up to " + dSum);
+        		isHit = true;
+        	}else{   //stick
+                System.out.println("\nAll players cards will be displayed:");
+        		printCards(players, players.length - 1, playersNames);
+        		if(dSum > 21){
+        		    System.out.println("Dealer busted with a total of " + dSum );
+        			for(int i = 0; i < players.length - 1; i++){
+        				if(isPlayerNotBusted(i, players, playersNames))
+        					System.out.println(playersNames[i] + ": won!");
+        				else
+        					System.out.println(playersNames[i] + ": lost..");
+        			}
+        		}else
+        			for(int i = 0; i < players.length - 1; i++){
+        				if(isPlayerNotBusted(i, players, playersNames)){
+        					if(countCards(players[i], playersNames) > dSum)
+        						System.out.println(playersNames[i] + ": won!");
+        					else if(countCards(players[i], playersNames) == dSum)
+        						System.out.println(playersNames[i] + " and the Dealer -- PUSH, DRAW");
+        					else//player has less than dealerSum
+        						System.out.println(playersNames[i] + " lost..");
+        				}else
+        					System.out.println(playersNames[i] + " lost..");
+        			}
+        	}	
+        }while(isHit);
     }
     
+    private static boolean isPlayerNotBusted(int currentPlayer,int [][] players, String [] playersNames){
+    	int sumOfCurrentPlayer = countCards(players[currentPlayer], playersNames);
+    	//for(int j = 0; j < players[0].length; j++)
+    		//sumOfCurrentPlayer += players[currentPlayer][j];
+    	if(sumOfCurrentPlayer > 21)
+    		return false;
+    	else
+    		return true;
+    }
+    
+/**
+     * This method checks to see if there is an Ace in dealer's hand and if the Ace is high
+     * @param dealer The index of the dealer's cards on the playing field
+     * @param dealersSum The sum of the dealer's hand
+     * @return Returns true if there is an Ace in the dealer's hand and if the Ace is high
+     */
     public static boolean isThereOneAceHigh(int [] dealer, int dealersSum){
-        int inverseSum = dealersSum;
-        for(int i = 0; i < dealer.length; i++){
-            inverseSum -= (dealer[i] % 13<9? dealer[i] + 1:10);
-            }
-        if(inverseSum==10)
-        	return true;
-        return false;
+    	int sum = 0;
+    	boolean aceFound = false;
+    	for (int i = 0; i < dealer.length && dealer[i] != -1 ; i++ ) {//the loop doesn't need to go through the whole array
+        	int c = dealer[i] % 13; //divide to get card number, but it's 1 off (lower because of 0 index)
+           	if (c >= 0 && c < 9)
+           		sum += c + 1;
+           	else if (c >= 9 && c <= 12)
+           		sum += 10;      	
+           	if (c == 0) {
+           		aceFound=true;
+           		if(isSumLessThanEleven(sum)) //this method used to be called aceIsHigh(int sum)
+           			return true;
+           		else 
+           			return false;
+           	}
+    	}
+      	return aceFound;
     }
     
     public static void revealWinnerAndTerminate(String output){
         System.out.println(output);
-        System.exit(1); //dont know if this is right
+        System.exit(1);
     }
     public static boolean isBlackJack(int[] playerHand){
     	   boolean oneTenValueCard=false;
