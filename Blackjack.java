@@ -1,26 +1,21 @@
 package BlackJack;
 /*  fix up list:
-    -need to take out a busted player from game 
-    -fix the isThereOneAceHigh method 
-    -compare winners more accurately
-    (-show both cards for dealer by dealers turn)
-    (-need to fix by which card dealt - if king queen or jack...)
-    
+    //-need to take out a busted player from game 
+    //-fix the isThereOneAceHigh method 
+    //-compare winners more accurately
+    //(-show both cards for dealer by dealers turn)
+    //(-need to fix by which card dealt - if king queen or jack...)
+    -if the dealer has blackjack he is errorfully dealt another card...... ;( .....(blackjack for dealer should b checked on line #213)
 */
 
 import java.util.*;
 public class Blackjack{
     public static void main(String[] args){
-        
         startGame();
-        
-        
     } 
     public static void startGame() {
         //creating a deck of cards
         boolean[] deck = new boolean[52];
-   
-        
         //finding out how many players are playing
         Scanner input = new Scanner(System.in);
         System.out.print("How many players will be playing? ");
@@ -41,8 +36,7 @@ public class Blackjack{
         //populating the players array with the value -1
         for (int i = 0; i < players.length; i++)
             populateDeck(players[i]);
-        
-        
+    
         //dealing cards to all the players    
         for (int i = 0; i < players.length; i++) {
             dealCards(deck, players[i]);
@@ -53,7 +47,6 @@ public class Blackjack{
              playersTurn(i, players ,deck, playersNames);
          }
               
- 
         dealersTurn(players, deck, playersNames);
         //input.close();
     }
@@ -211,13 +204,13 @@ public class Blackjack{
 	}
     
     public static void dealersTurn(int [][] players, boolean [] deck, String [] playersNames){
-        String winLoseStatus = "";
         int dSum = countCards(players[players.length - 1], playersNames);
         boolean isHit;
         
         System.out.println("It is the dealer's turn. \nThe dealers cards are:"); //added this to print dealers first 2 cards
         for (int i = 0; i < 2; i++)
         	System.out.println(getCardFaceValueText(players, players.length -1, i));
+        //check for blackjack here!
         do{
         	isHit = false;
         	if (dSum < 17){
@@ -233,7 +226,11 @@ public class Blackjack{
         	}else if(isThereOneAceHigh(players[players.length - 1], dSum) && dSum == 17){ // this is what the method is expecting... the isThereOneAce method is also expecting to be passed in something
         		hit(deck, players[players.length - 1]);
         		dSum = countCards(players[players.length - 1], playersNames);
-        		System.out.println("Dealer, you were dealt a " + ((hit(deck,players[players.length - 1])%13)+1) + " your cards now"
+        		System.out.println("To see what the dealer has dealt, press enter!"); 
+        		Scanner input = new Scanner(System.in);
+        		input.nextLine();
+        		System.out.println("The dealer was dealt a " 
+        		    + getCardFaceValueText(players, players.length - 1, getPlayersFirstEmptyCardIndex(players[players.length - 1])-1) + " your cards now"
         				+ " count up to " + dSum);
         		isHit = true;
         	}else{   //stick
@@ -242,37 +239,26 @@ public class Blackjack{
         		if(dSum > 21){
         		    System.out.println("Dealer busted with a total of " + dSum );
         			for(int i = 0; i < players.length - 1; i++){
-        				if(isPlayerNotBusted(i, players, playersNames))
+        				if(countCards(players[i], playersNames) <= 21)//checks if the player is not busted (used to be in the isPlayerNotBusted method)
         					System.out.println(playersNames[i] + ": won!");
         				else
-        					System.out.println(playersNames[i] + ": lost..");
+        					System.out.println(playersNames[i] + ": lost.");
         			}
         		}else
         			for(int i = 0; i < players.length - 1; i++){
-        				if(isPlayerNotBusted(i, players, playersNames)){
+        				if(countCards(players[i], playersNames) <= 21){//checks if the player is not busted
         					if(countCards(players[i], playersNames) > dSum)
         						System.out.println(playersNames[i] + ": won!");
         					else if(countCards(players[i], playersNames) == dSum)
         						System.out.println(playersNames[i] + " and the Dealer -- PUSH, DRAW");
         					else//player has less than dealerSum
-        						System.out.println(playersNames[i] + " lost..");
+        						System.out.println(playersNames[i] + " lost.");
         				}else
-        					System.out.println(playersNames[i] + " lost..");
+        					System.out.println(playersNames[i] + " lost.");
         			}
         	}	
         }while(isHit);
     }
-    
-    private static boolean isPlayerNotBusted(int currentPlayer,int [][] players, String [] playersNames){
-    	int sumOfCurrentPlayer = countCards(players[currentPlayer], playersNames);
-    	//for(int j = 0; j < players[0].length; j++)
-    		//sumOfCurrentPlayer += players[currentPlayer][j];
-    	if(sumOfCurrentPlayer > 21)
-    		return false;
-    	else
-    		return true;
-    }
-    
 /**
      * This method checks to see if there is an Ace in dealer's hand and if the Ace is high
      * @param dealer The index of the dealer's cards on the playing field
@@ -297,11 +283,6 @@ public class Blackjack{
            	}
     	}
       	return aceFound;
-    }
-    
-    public static void revealWinnerAndTerminate(String output){
-        System.out.println(output);
-        System.exit(1);
     }
     public static boolean isBlackJack(int[] playerHand){
     	   boolean oneTenValueCard=false;
